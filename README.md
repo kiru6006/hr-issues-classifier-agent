@@ -7,6 +7,24 @@
 
 ---
 
+## 📸 Application Screenshots & Visual Tour
+
+> Complete high-resolution visual guide available in [`docs/SCREENSHOTS.md`](./docs/SCREENSHOTS.md).
+
+| HR Review & Triage Queue | HR Analytics Command Center |
+|:---:|:---:|
+| ![HR Review Queue](./docs/screenshots/06_hr_review_queue.png) | ![HR Analytics](./docs/screenshots/05_hr_analytics_dashboard.png) |
+
+| Multi-Channel Grievance Intake (Auto-Populating Categories) | Grievance Tracking & AI Confidence Timeline |
+|:---:|:---:|
+| ![Submission Form](./docs/screenshots/03_submit_grievance_form.png) | ![Timeline](./docs/screenshots/04_ticket_details_timeline.png) |
+
+| Real-Time SLA Monitor & Escalations | Systemic Pattern Cluster Alerts |
+|:---:|:---:|
+| ![SLA Monitor](./docs/screenshots/07_sla_compliance_monitor.png) | ![Pattern Alerts](./docs/screenshots/08_systemic_pattern_alerts.png) |
+
+---
+
 ## 1. EXECUTIVE SUMMARY & CONTEXT
 
 ### Problem
