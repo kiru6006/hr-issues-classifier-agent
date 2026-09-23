@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: hr_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hr_ai_db
+      POSTGRES_USER: hr_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password_here}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hr_admin -d hr_ai_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: hr_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: hr_ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      OLLAMA_HOST: "0.0.0.0:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    command: serve
+
+  backend:
+    build: ./backend
+    container_name: hr_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://hr_admin:${DB_PASSWORD:-secure_password_here}@postgres:5432/hr_ai_db
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_API_URL: http://ollama:11434
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_hr_ai_classifier_32bytes_min_dev_default}
+      ENVIRONMENT: development
+      ENABLE_FIELD_ENCRYPTION: "true"
+      DB_ENCRYPTION_KEY: ${DB_ENCRYPTION_KEY:-s8bQnK1dY5_Vj2A_8QW9k7jU_mP0N3zL5rT8vX2c1E0=}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  celery_worker:
+    build: ./backend
+    container_name: hr_celery_worker
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://hr_admin:${DB_PASSWORD:-secure_password_here}@postgres:5432/hr_ai_db
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_API_URL: http://ollama:11434
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_hr_ai_classifier_32bytes_min_dev_default}
+      ENABLE_FIELD_ENCRYPTION: "true"
+      DB_ENCRYPTION_KEY: ${DB_ENCRYPTION_KEY:-s8bQnK1dY5_Vj2A_8QW9k7jU_mP0N3zL5rT8vX2c1E0=}
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=2
+
+  frontend:
+    build: ./frontend
+    container_name: hr_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=/api/v1
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  postgres_data:
+  ollama_data:
