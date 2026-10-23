@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Login } from './pages/auth/Login';
 import { PrivacyPolicy } from './pages/auth/PrivacyPolicy';
@@ -53,7 +53,7 @@ const RootRedirector: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 font-sans selection:bg-teal-500 selection:text-slate-950">
         <Navbar />
 
@@ -184,6 +184,6 @@ export const App: React.FC = () => {
           </div>
         </footer>
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
